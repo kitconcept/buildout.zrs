@@ -1,9 +1,57 @@
-https://pypi.python.org/pypi/zc.zrs/2.4.4
-https://pypi.python.org/pypi/plone.recipe.zeoserver
-http://stackoverflow.com/questions/18742513/plone-switching-to-zrs-using-plone-recipe-zeoserver-on-plone-4-3-1
+ZEO REPLICATION EXAMPLE
+=======================
+
+Set up a master ZEO
+-------------------
+
+master.cfg::
+
+  [zeo]
+  recipe = plone.recipe.zeoserver[zrs]
+  eggs =
+    Plone
+    plone.recipe.zeoserver[zrs]
+  zeo-address = 8000
+  replicate-to = localhost:9000
+
+Start the instance and 'var/log/zeo.log' should include::
+
+  PrimaryFactory starting on 8000
+  2013-11-26T08:19:38 Starting factory <zc.zrs.primary.PrimaryFactory instance at 0x999d42c>
 
 
-1) Set up two zeo instances (master and slave) with the '[zrs]' extension
-2) Set up the 'replicate-to' setting of the master zeo instance to the slave
-3) Set up the 'replicate-from' setting of the slave zeo instance to the master
-4) Set up the slave instances to 'read-only'
+Set up a slave ZEO
+------------------
+
+slave.cfg::
+
+  [zeo]
+  recipe = plone.recipe.zeoserver[zrs]
+  eggs =
+    Plone
+    plone.recipe.zeoserver[zrs]
+  zeo-address = 8000
+  replicate-to = localhost:9000
+
+  [instance]
+  recipe = plone.recipe.zope2instance
+  read-only = True
+
+var/log/zeo.log::
+
+  2013-11-26T08:23:14 IPv4Address(TCP, '127.0.0.1', 9000): Connected
+
+
+Sync Databases
+--------------
+
+If you have an existing Database, make sure you copied over 'var/filestorage' and 'var/blobstorage' from master to slave.
+
+
+Further reading
+---------------
+
+* https://pypi.python.org/pypi/zc.zrs/2.4.4
+* https://pypi.python.org/pypi/plone.recipe.zeoserver
+* http://stackoverflow.com/questions/18742513/plone-switching-to-zrs-using-plone-recipe-zeoserver-on-plone-4-3-1
+* https://github.com/codesyntax/buildout.zrsexample/blob/master/buildout.cfg
